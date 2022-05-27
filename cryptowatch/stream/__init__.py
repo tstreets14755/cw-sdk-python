@@ -38,7 +38,8 @@ def _on_close(ws, close_status_code, close_reason):
 
 def on_market_update(ws, message):
     try:
-        if message == b'\x01':
+        if message == b"\x01":
+            log(f"Heartbeat received: {message}", is_debug=True)
             return
         stream_message = stream_pb2.StreamMessage()
         stream_message.ParseFromString(message)
