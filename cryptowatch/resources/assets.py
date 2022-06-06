@@ -4,7 +4,7 @@ from marshmallow import fields, post_load
 
 from cryptowatch.utils import log
 from cryptowatch.resources.allowance import AllowanceSchema
-from cryptowatch.resources.base import BaseSchema
+from cryptowatch.resources.base import BaseResource, BaseSchema
 from cryptowatch.resources.markets import MarketSchema
 
 
@@ -43,21 +43,6 @@ class Assets:
         return assets_obj
 
 
-class AssetResource:
-    def __init__(self, id, symbol, name, fiat, markets=None, route=None):
-        self.id = id
-        self.symbol = symbol
-        self.name = name
-        self.fiat = fiat
-        if markets:
-            self.markets = markets
-        if route:
-            self.route = route
-
-    def __repr__(self):
-        return "<Asset({self.name})>".format(self=self)
-
-
 class AssetSchema(BaseSchema):
     id = fields.Integer()
     symbol = fields.Str()
@@ -69,13 +54,13 @@ class AssetSchema(BaseSchema):
     )
 
     @post_load
-    def make_asset(self, data, **kwargs):
-        return AssetResource(**data)
+    def make_resource(self, data, **kwargs):
+        return BaseResource(_name="Asset", _display_key="name", **data)
 
 
 class AssetAPIResponseSchema(BaseSchema):
     result = fields.Nested(AssetSchema)
-    allowance = fields.Nested(AllowanceSchema, partial=("account",), missing=None)
+    allowance = fields.Nested(AllowanceSchema, partial=("account",), load_default=None)
 
     @post_load
     def make_asset(self, data, **kwargs):
@@ -84,7 +69,7 @@ class AssetAPIResponseSchema(BaseSchema):
 
 class AssetListAPIResponseSchema(BaseSchema):
     result = fields.Nested(AssetSchema, many=True)
-    allowance = fields.Nested(AllowanceSchema, partial=("account",), missing=None)
+    allowance = fields.Nested(AllowanceSchema, partial=("account",), load_default=None)
 
     @post_load
     def make_asset(self, data, **kwargs):
